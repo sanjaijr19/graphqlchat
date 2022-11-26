@@ -1,195 +1,70 @@
 import graphene
 from graphene_django import DjangoObjectType
+from graphene_django.rest_framework.mutation import SerializerMutation
 from django.contrib.auth.models import User
-from .models import GroupDetails,GroupName
+from .models import GroupDetails,GroupName,Message
+from .types import UserType,GroupType,GroupNameType,MessageType
+from .mutation import UserMutation,UpdateUser,DeleteUser,CreateGroupName,UpdateGroupName,DeleteGroupName,CreateGroupdetails,UpdateGroupdetails,DeleteGroupdetails,CreateMessage,UpdateMessage,DeleteMessage
+from graphql_auth import mutations
+import graphql_jwt
+from graphene_django.filter import DjangoFilterConnectionField
+from graphql_jwt.decorators import login_required
+from django_graphene_permissions import permissions_checker
+from django_graphene_permissions.permissions import IsAuthenticated
+from graphene import relay
 
-class UserType(DjangoObjectType):
-    class Meta:
-        model=User
-        fields=("id","username","email",'password')
-
-
-
-class CreateUser(graphene.Mutation):
-    class Arguments:
-        # id=graphene.ID()
-        username=graphene.String(required=True)
-        email=graphene.String(required=True)
-        password=graphene.String(required=True)
-    user=graphene.Field(UserType)
-
-    @classmethod
-    def mutate(cls,root,info,username,email,password):
-        user=User(username=username,email=email)
-        user.username=username
-        user.email=email
-        user.password=password
-        user.save()
-        return CreateUser(user=user)
-# class Mutation(graphene.ObjectType):
-#     create_user=CreateUser.Field()
-#
-class UpdateUser(graphene.Mutation):
-    class Arguments:
-        id=graphene.ID()
-        username=graphene.String(required=True)
-        email=graphene.String(required=True)
-        password=graphene.String()
-    user=graphene.Field(UserType)
-
-    @classmethod
-    def mutate(cls,root,info,id,username,email,password):
-        user=User.objects.get(id=id)
-        # user=User(username=username,email=email)
-        user.username=username
-        user.email=email
-        user.password=password
-        user.save()
-        return UpdateUser(user=user)
-
-class DeleteUser(graphene.Mutation):
-    class Arguments:
-        id=graphene.ID(required=True)
-        username=graphene.String()
-        email=graphene.String()
-        password=graphene.String()
-    user=graphene.Field(UserType)
-
-    @classmethod
-    def mutate(cls,root,info,id,username,email,password):
-        user=User.objects.get(id=id)
-        # user=User(username=username,email=email)
-        user.username=username
-        user.email=email
-        user.password=password
-        user.delete()
-        return DeleteUser(user=user)
-
-
-class GroupNameType(DjangoObjectType):
-    class Meta:
-        model=GroupName
-        fields=("id","name")
-
-class CreateGroupName(graphene.Mutation):
-    class Arguments:
-        # id=graphene.ID()
-        name=graphene.String(required=True)
-    group=graphene.Field(GroupNameType)
-
-    @classmethod
-    def mutate(cls,root,info,name):
-        group=GroupName(name=name)
-        group.name=name
-        group.save()
-        return CreateGroupdetails(group=group)
-
-class UpdateGroupName(graphene.Mutation):
-    class Arguments:
-        id=graphene.ID()
-        name=graphene.String(required=True)
-    group=graphene.Field(GroupNameType)
-
-    @classmethod
-    def mutate(cls,root,info,id,name):
-        group=GroupName.objects.get(id=id)
-        # user=User(username=username,email=email)
-        group.name=name
-        group.save()
-        return UpdateGroupName(group=group)
-
-class DeleteGroupName(graphene.Mutation):
-    class Arguments:
-        id=graphene.ID(required=True)
-        name=graphene.String()
-    group=graphene.Field(GroupNameType)
-
-    @classmethod
-    def mutate(cls,root,info,id,name):
-        group=GroupName.objects.get(id=id)
-        # user=User(username=username,email=email)
-        group.name=name
-        group.delete()
-        return DeleteGroupName(group=group)
-
-
-class GroupType(DjangoObjectType):
-    class Meta:
-        model=GroupDetails
-        fields=("id","group_name","members","date")
-
-
-class CreateGroupdetails(graphene.Mutation):
-    class Arguments:
-        # id=graphene.ID()
-        group_name=graphene.String(required=True)
-        members=graphene.String(required=True)
-    group=graphene.Field(GroupType)
-
-    @classmethod
-    def mutate(cls,root,info,group_name,members):
-        group=GroupDetails(group_name=group_name,members=members)
-        group.group_name=group_name
-        group.members=members
-        group.save()
-        return CreateGroupdetails(group=group)
-
-class UpdateGroupdetails(graphene.Mutation):
-    class Arguments:
-        id=graphene.ID()
-        group_name=graphene.String(required=True)
-        members=graphene.String(required=True)
-    group=graphene.Field(GroupType)
-
-    @classmethod
-    def mutate(cls,root,info,id,group_name,members):
-        group=User.objects.get(id=id)
-        # user=User(username=username,email=email)
-        group.group_name=group_name
-        group.members=members
-        group.save()
-        return UpdateGroupdetails(group=group)
-
-class DeleteGroupdetails(graphene.Mutation):
-    class Arguments:
-        id=graphene.ID(required=True)
-        group_name=graphene.String()
-        members=graphene.String()
-    group=graphene.Field(GroupType)
-
-    @classmethod
-    def mutate(cls,root,info,id,group_name,members):
-        group=GroupDetails.objects.get(id=id)
-        # user=User(username=username,email=email)
-        group.group_name=group_name
-        group.members=members
-        group.delete()
-        return DeleteGroupdetails(group=group)
+class AuthMutation(graphene.Mutation):
+    register = mutations.Register.Field()
+    token_auth = mutations.ObtainJSONWebToken.Field()
+    resend_activation_email = mutations.ResendActivationEmail.Field()
+    send_password_reset_email = mutations.SendPasswordResetEmail.Field()
+    password_reset = mutations.PasswordReset.Field()
+    password_change = mutations.PasswordChange.Field()
+    update_account = mutations.UpdateAccount.Field()
+    verify_account = mutations.VerifyAccount.Field()
 
 
 
+"""User query"""
 class Query(graphene.ObjectType):
+
+    # user = graphene.Field(UserType)
     all_user = graphene.List(UserType)
 
     def resolve_all_user(root, info):
         return User.objects.all()
 
+    # def resolve_user(self, info):
+    #     user = info.context.user
+    #     if user.is_anonymous:
+    #         raise Exception('Not logged in!')
+    #
+    #     return user
+    
 
+
+    """groupname query"""
     groupname = graphene.List(GroupNameType)
 
     def resolve_groupname(root, info):
         return GroupName.objects.all()
 
-
+    """groupdetails query"""
     group = graphene.List(GroupType)
 
     def resolve_group(root, info):
         return GroupDetails.objects.all()
+    """message query"""
+    message = graphene.List(MessageType)
+    def resolve_message(root,info):
+        return Message.objects.all()
 
-
-class Mutation(graphene.ObjectType):
+class Mutation(AuthMutation,graphene.ObjectType):
+    token_auth = graphql_jwt.ObtainJSONWebToken.Field()
+    verify_token = graphql_jwt.Verify.Field()
+    refresh_token = graphql_jwt.Refresh.Field()
     update_user=UpdateUser.Field()
-    create_user=CreateUser.Field()
+    create_user=UserMutation.Field()
     delete_user=DeleteUser.Field()
     update_group = UpdateGroupdetails.Field()
     create_group = CreateGroupdetails.Field()
@@ -197,6 +72,15 @@ class Mutation(graphene.ObjectType):
     update_groupname = UpdateGroupName.Field()
     create_groupname = CreateGroupName.Field()
     delete_groupname = DeleteGroupName.Field()
+    update_message = UpdateMessage.Field()
+    create_message = CreateMessage.Field()
+    delete_message = DeleteMessage.Field()
+
+class MessageMutation(AuthMutation,graphene.ObjectType):
+    update_message = UpdateMessage.Field()
+    create_message = CreateMessage.Field()
+    delete_message = DeleteMessage.Field()
 
 
 schema = graphene.Schema(query=Query,mutation=Mutation)
+schemas=graphene.Schema(query=Query,mutation=MessageMutation)
