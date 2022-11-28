@@ -18,7 +18,3 @@ class PrivateGraphQLView(BaseGraphQLView):
         if not request.user or not request.user.is_staff:
             return False
         return super().can_display_graphiql(request, data)
-
-
-
-

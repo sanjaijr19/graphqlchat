@@ -13,6 +13,8 @@ from django_graphene_permissions import permissions_checker
 from django_graphene_permissions.permissions import IsAuthenticated
 from graphene import relay
 
+
+
 class AuthMutation(graphene.Mutation):
     register = mutations.Register.Field()
     token_auth = mutations.ObtainJSONWebToken.Field()
@@ -40,7 +42,7 @@ class Query(graphene.ObjectType):
     #         raise Exception('Not logged in!')
     #
     #     return user
-    
+
 
 
     """groupname query"""
