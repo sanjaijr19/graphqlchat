@@ -54,13 +54,6 @@ class MessageSerializer(serializers.HyperlinkedModelSerializer):
     group= serializers.ListField(child=serializers.IntegerField())
     message= serializers.CharField()
 
-    # sender = UserMessageSerializer()
-    # print(sender)
-    # group = GroupMessageSerializer()
-    # print(group)
-    # message = serializers.CharField()
-    #
-    # group = serializers.StringRelatedField()
 
     class Meta:
         model = Message
@@ -136,7 +129,6 @@ class UserSerializer(serializers.HyperlinkedModelSerializer):
         if User.objects.filter(email=attrs['email']).exists():
             raise serializers.ValidationError('email already exists')
         return super().validate(attrs)
-
 
 
 
