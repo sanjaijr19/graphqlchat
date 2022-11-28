@@ -1,7 +1,7 @@
 import graphene
 from rest_framework import serializers
 from django.contrib.auth.models import User
-from .serializers import UserSerializer,UserEditSerializer,GroupnameSerializer,GroupSerializer,GroupViewSerializer,MessageSerializer
+from .serializers import UserEditSerializer,GroupnameSerializer,GroupSerializer,GroupViewSerializer,MessageSerializer
 from graphene_django.rest_framework.mutation import SerializerMutation
 from .types import UserType,GroupType,GroupNameType,MessageType
 from .models import GroupDetails,GroupName,Message
@@ -63,8 +63,6 @@ class UpdateGroupdetails(mutations.UpdateModelMutation):
 class DeleteGroupdetails(mutations.DeleteModelMutation):
     class Meta:
         model = GroupDetails
-
-
 
 """
 message CRUD
