@@ -22,7 +22,6 @@ class UserMutation(mutations.CreateModelMutation):
 
 
 
-
 class UpdateUser(mutations.UpdateModelMutation):
     class Meta:
         serializer_class = UserEditSerializer

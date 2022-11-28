@@ -46,14 +46,13 @@ class GroupnameSerializer(serializers.HyperlinkedModelSerializer):
 
 
 # Message Serializer
-class MessageSerializer(serializers.ModelSerializer):
-    sender = serializers.SlugRelatedField(many=False, slug_field="username", queryset=User.objects.all())
-    group = serializers.SlugRelatedField(many=False, slug_field="name", queryset=GroupName.objects.all())
-    # sender= serializers.PKOnlyObject(pk=1)
-    # group= serializers.CharField()
-    # message= serializers.CharField()
-
-
+class MessageSerializer(serializers.HyperlinkedModelSerializer):
+    # sender = serializers.SlugRelatedField(many=False, slug_field="username", queryset=User.objects.all())
+    # group = serializers.SlugRelatedField(many=False, slug_field="name", queryset=GroupName.objects.all())
+    # sender = serializers.ListField(child=serializers.CharField())
+    sender = serializers.IntegerField()
+    group= serializers.ListField(child=serializers.IntegerField())
+    message= serializers.CharField()
 
     # sender = UserMessageSerializer()
     # print(sender)
@@ -69,17 +68,17 @@ class MessageSerializer(serializers.ModelSerializer):
 
     # def create(self, validated_data):
     #     return Message.objects.create(**validated_data)
-    #
-    # def create(self, validated_data):
-    #     print(validated_data["group"])
-    #     print(validated_data["sender"])
-    #     sender=User.objects.get(id=(validated_data["sender"]))
-    #     group= GroupDetails.objects.get(group_name__id__=validated_data["group"])
-    #     message=Message.objects.create(validated_data["message"])
-    #     msg = Message.objects.create(sender=sender,group=group,message=message)
-    #     return msg
 
-
+    def create(self, validated_data):
+        # print(validated_data["group"])
+        # print(validated_data["sender"])
+        # print(validated_data["message"])
+        sender=User.objects.get(id=(validated_data["sender"]))
+        for grp in validated_data["group"]:
+            group= GroupDetails.objects.get(group_name_id=grp)
+            message= Message.objects.create(message=validated_data["message"])
+            msg = Message.objects.create(sender=sender,group=group,message=message)
+            return msg
 class MessageEditSerializer(serializers.ModelSerializer):
     sender = serializers.CharField(read_only=True)
     group = serializers.CharField(read_only=True)
@@ -137,6 +136,7 @@ class UserSerializer(serializers.HyperlinkedModelSerializer):
         if User.objects.filter(email=attrs['email']).exists():
             raise serializers.ValidationError('email already exists')
         return super().validate(attrs)
+
 
 
 
